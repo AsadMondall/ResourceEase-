@@ -1,0 +1,84 @@
+{% extends './layout.html' %}
+{% load static i18n crispy_forms_tags %}
+
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .option-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .option {
+            margin: 0 10px; /* Adjust the space between the buttons */
+        }
+        .btn {
+            width: 200px; /* Adjust the width of the buttons */
+        }
+        .text-before-options {
+            text-align: center;
+            color: green;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-before-options">
+            <img src="{% static '/blog/img/R.jpg' %}" alt="Architecture" style="width: 500px; height: 400px;">
+            <br>
+            <p>Before contribution, first digitalize your resource then Contribute. If your resource is already digitalized, you can contribute directly.</p>
+        </div>
+        <div class="option-container">
+            <div class="option">
+                <button class="btn btn-primary btn-lg" onclick="selectOption('digitalize')">Digitalize</button>
+            </div>
+            <div class="option">
+                <button class="btn btn-success btn-lg" onclick="selectOption('contribute')">Contribute</button>
+            </div>
+        </div>
+    
+<!-- Upload PDF form with Bootstrap styling -->
+<!-- Upload PDF form with Bootstrap styling at the bottom center -->
+<div id="pdfUploadForm" style="display: none; position: fixed; bottom: 10%; left: 50%; transform: translateX(-50%);">
+    <form method="post" action="{% url 'upload_pdf' %}" enctype="multipart/form-data" class="mt-3 p-3 bg-light text-center">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="pdf_file">Choose a PDF file:</label>
+            <div class="mb-2">
+                <input type="file" class="form-control-file" id="pdf_file" name="pdf_file">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+</div>
+
+
+
+    
+        <!-- Display the download links after conversion -->
+        {% if uploaded_file_path %}
+            <p>Uploaded PDF: <a href="{{ uploaded_file_path }}">Download</a></p>
+        {% endif %}
+        {% if output_docx %}
+            <p>Generated DOCX: <a href="{{ output_docx }}">Download</a></p>
+        {% endif %}
+    </div>
+    
+    <script>
+        function selectOption(option) {
+            if (option === 'digitalize') {
+                document.getElementById('pdfUploadForm').style.display = 'block';
+            } else if (option === 'contribute') {
+                window.location.href = "{% url 'resource_create' %}"; // Redirect to the resource_create page
+            }
+        }
+    </script>
+</body>
+</html>
+<br><br><br><br><br><br>
+{{ form.media }}
+{% endblock content %}

@@ -1,0 +1,10 @@
+{% extends '../blog/layout.html' %}
+{% load static i18n %}
+
+{% block content %}
+<div class="jumbotron text-center">
+    <h1>Logout</h1>
+    <p>You have been successfully logged out.</p>
+    <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+</div>
+{% endblock %}

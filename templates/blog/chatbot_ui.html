@@ -1,0 +1,151 @@
+{% extends './layout.html' %}
+{% load static i18n %}
+{% block title %}Ask AI - ResourceEase{% endblock title %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Chat Bot</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/lib/languages/python.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/a11y-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="container mt-5">
+    <h1 style="color: white">Chat Bot</h1>
+    <div class="chat-box mt-3">
+      <!-- Chat messages will be added here dynamically -->
+    </div>
+    <div class="form-group mt-3">
+      <textarea class="form-control" rows="3" placeholder="Type your message here" id="message-input"></textarea>
+    </div>
+    <button type="button" class="btn btn-primary" id="send-btn">Send</button>
+  </div>
+  <script>
+    setInterval(highlightAll, 1000);
+
+    function highlightAll() {
+      document.querySelectorAll("pre code").forEach(block => {
+        hljs.highlightBlock(block);
+      });
+    }
+
+    const chatBox = document.querySelector(".chat-box");
+    const messageInput = document.querySelector("#message-input");
+    const sendBtn = document.querySelector("#send-btn");
+
+    function addMessage(message, isUserMessage) {
+  if (!isUserMessage) {
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add("mt-3", "p-3", "rounded", "message-container", "bot-message");
+
+    const hasCodeBlock = message.includes("```");
+    if (hasCodeBlock) {
+      const codeContent = message.replace(/```([\s\S]+?)```/g, '</p><pre><code>$1</code></pre><p>');
+      messageDiv.innerHTML = `
+        <div class="message bot">
+          <i class="fas fa-robot"></i>
+          <p>${codeContent}</p>
+        </div>
+      `;
+    } else {
+      messageDiv.innerHTML = `
+        <div class="message bot">
+          <i class="fas fa-robot"></i>
+          <p>${message}</p>
+        </div>
+      `;
+    }
+
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  } else {
+    const lastMessage = chatBox.lastElementChild;
+    if (lastMessage && lastMessage.classList.contains("user-message")) {
+      lastMessage.querySelector("p").innerHTML += `<br>${message}`;
+    } else {
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("mt-3", "p-3", "rounded", "message-container", "user-message");
+
+      messageDiv.innerHTML = `
+        <div class="message user">
+          <i class="fas fa-user"></i>
+          <p>${message}</p>
+        </div>
+      `;
+
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  }
+}
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+
+      if (message !== "") {
+        addMessage(message, true);
+
+        fetch("/get_bot_response/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: `message=${message}`
+        })
+          .then(response => response.json())
+          .then(data => {
+            messageInput.value = "";
+            const botResponse = data.response;
+
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("mt-3", "p-3", "rounded", "message-container", "bot-message");
+            const hasCodeBlock = botResponse.includes("```");
+            
+            if (hasCodeBlock) {
+              const codeContent = botResponse.replace(/```([\s\S]+?)```/g, '</p><pre><code>$1</code></pre><p>');
+              messageDiv.innerHTML = `
+                <div class="message bot">
+                  <i class="fas fa-robot"></i>
+                  <p>${codeContent}</p>
+                </div>
+              `;
+            } else {
+              messageDiv.innerHTML = `
+                <div class="message bot">
+                  <i class="fas fa-robot"></i>
+                  <p>${botResponse}</p>
+                </div>
+              `;
+            }
+
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+          })
+          .catch(error => console.error(error));
+      }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    messageInput.addEventListener("keydown", event => {
+      if (event.keyCode === 13 && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+
+</html>
+
+<br><br><br><br><br><br>
+{% endblock content %}

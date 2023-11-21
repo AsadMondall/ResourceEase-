@@ -1,0 +1,22 @@
+{% extends './layout.html' %}
+{% load static i18n crispy_forms_tags %}
+
+{% block content %}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload PDF</title>
+</head>
+<body>
+    <h2>Upload a PDF file</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="pdf_file">
+        <button type="submit">Upload</button>
+    </form>
+</body>
+</html>
+{{ form.media }}
+{% endblock content %}
